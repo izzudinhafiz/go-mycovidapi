@@ -1,7 +1,9 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -25,7 +27,14 @@ func New() *Server {
 
 func (s *Server) Initialize() {
 	//TODO: DSN should come from ENV
-	var dsn = "host=izzudinhafiz.com user=hafizwriter password=pass940203 port=5432 database=test_mycovidapi sslmode=disable"
+	var dsn = fmt.Sprintf(
+		"host=%v user=%v password=%v port=%v database=%v sslmode=disable",
+		os.Getenv("postgres_host"),
+		os.Getenv("postgres_user"),
+		os.Getenv("postgres_pass"),
+		os.Getenv("postgres_port"),
+		os.Getenv("postgres_database"),
+	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
@@ -68,7 +77,8 @@ func (s *Server) RegisterPath(path string, f func(c *gin.Context), basePath ...s
 
 func (s *Server) Run() {
 	s.Initialize()
-	log.Fatal(http.ListenAndServe(":8000", s.Router)) //TODO: Change port to SERVER_PORT
+	port := ":" + os.Getenv("PORT")
+	log.Fatal(http.ListenAndServe(port, s.Router)) //TODO: Change port to SERVER_PORT
 }
 
 func (s *Server) GetCountryCases(c *gin.Context) {
