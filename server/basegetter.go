@@ -1,14 +1,12 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
-	"net/http"
 	"reflect"
 	"strings"
 	"time"
 
-	"github.com/izzudinhafiz/go-mycovidapi/models"
+	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,35 +29,7 @@ var statesAbrvMap = map[string]string {
 	"PNG": "Pulau Pinang",
 }
 
-func parseStartEndDate(r *http.Request) (models.Date, models.Date, error) {
-	null_date := models.Date(time.Time{})
-	start_date_str := r.FormValue("start_date")
-	end_date_str := r.FormValue("end_date")
-	if end_date_str == "" {
-		return null_date, null_date, errors.New("requires end date")
-	}
-
-	var start_date time.Time
-	var end_date time.Time
-	var err error
-
-	if start_date_str != "" {
-		start_date, err = time.Parse("2006-01-02", start_date_str)
-		if err != nil {
-			return null_date, null_date, errors.New("invalid start date format")
-		}
-	}
-
-	end_date, err = time.Parse("2006-01-02", end_date_str)
-	if err != nil {
-		return null_date, null_date, errors.New("invalid end date format")
-	}
-
-	return models.Date(start_date), models.Date(end_date), nil
-}
-
-func parseStates(r *http.Request) ([]string, error) {
-	states_str := r.FormValue("state")
+func parseStates(states_str string) ([]string, error) {
 	if states_str == "" {
 		return []string{}, errors.New("requires at least one state")
 	}
@@ -78,57 +48,48 @@ func parseStates(r *http.Request) ([]string, error) {
 	return states, nil
 }
 
-func (s *Server) getCountry(w http.ResponseWriter, r *http.Request, out interface{}) error {
-	start_date, end_date, err := parseStartEndDate(r)
+type CountryRequests struct {
+	StartDate time.Time `form:"start_date" time_format:"2006-01-02"`
+	EndDate time.Time `form:"end_date" time_format:"2006-01-02"`
+}
 
-	if err != nil {
-		log.Errorf("%v?%v: %v", r.URL.Path,r.URL.RawQuery, err)
-		return err
-	}
+type StateRequests struct {
+	StartDate time.Time `form:"start_date" time_format:"2006-01-02"`
+	EndDate time.Time `form:"end_date" time_format:"2006-01-02"`
+	State string
+}
+
+func (s *Server) getCountry(c *gin.Context, out interface{}) error {
+	var query CountryRequests
+	c.BindQuery(&query)
+
+	//TODO: Handle different combination of start_date, end_date
 	val := reflect.ValueOf(out).Interface()
-	tx := s.DB.Where("date BETWEEN ? AND ?", start_date, end_date).Find(&val, "state ='Malaysia'")
+	tx := s.DB.Where("date BETWEEN ? AND ?", query.StartDate, query.EndDate).Find(&val, "state ='MY'")
 	if tx.Error != nil {
-		log.Errorf("%v?%v: %v", r.URL.Path,r.URL.RawQuery, tx.Error)
+		log.Errorf("%v?%v: %v",c.Request.URL.Path, c.Request.URL.Query(), tx.Error)
 		return tx.Error
 	}
-	jsonResponse, err := json.Marshal(val)
-	if err != nil {
-		log.Errorf("%v?%v: %v", r.URL.Path,r.URL.RawQuery, err)
-		return err
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonResponse)
-
+	c.JSON(200, val)
 	return nil
 }
 
-func (s *Server) getState(w http.ResponseWriter, r *http.Request, out interface{}) error {
-	start_date, end_date, err := parseStartEndDate(r)
+func (s *Server) getState(c *gin.Context, out interface{}) error {
+	var query StateRequests
+	c.BindQuery(&query)
 
+	states, err := parseStates(query.State)
 	if err != nil {
-		log.Errorf("%v?%v: %v", r.URL.Path,r.URL.RawQuery, err)
-		return err
-	}
-
-	states, err := parseStates(r)
-	if err != nil {
-		log.Errorf("%v?%v: %v", r.URL.Path,r.URL.RawQuery, err)
+		log.Errorf("%v?%v: %v", c.Request.URL.Path, c.Request.URL.Query(), err)
 		return err
 	}
 
 	val := reflect.ValueOf(out).Interface()
-	tx := s.DB.Where("date BETWEEN ? AND ?", start_date, end_date).Where("state IN ?", states).Find(&val)
+	tx := s.DB.Where("date BETWEEN ? AND ?", query.StartDate, query.EndDate).Where("state IN ?", states).Find(&val)
 	if tx.Error != nil {
-		log.Errorf("%v?%v: %v", r.URL.Path,r.URL.RawQuery, tx.Error)
+		log.Errorf("%v?%v: %v",c.Request.URL.Path, c.Request.URL.Query(), tx.Error)
 		return tx.Error
 	}
-	jsonResponse, err := json.Marshal(val)
-	if err != nil {
-		log.Errorf("%v?%v: %v", r.URL.Path,r.URL.RawQuery, err)
-		return err
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonResponse)
-
+	c.JSON(200, val)
 	return nil
 }

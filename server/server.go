@@ -2,19 +2,18 @@ package server
 
 import (
 	"net/http"
-	"path"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/izzudinhafiz/go-mycovidapi/models"
 )
 
 type Server struct {
-	Router *mux.Router
+	Router *gin.Engine
 	DB *gorm.DB
 }
 
@@ -34,36 +33,37 @@ func (s *Server) Initialize() {
 	if err != nil {
 		panic(err)
 	}
-	s.Router = mux.NewRouter()
+
+	s.Router = gin.Default()
 	s.DB = db
 
-	s.RegisterPath("/country/cases", "GET", s.GetCountryCases)
-	s.RegisterPath("/country/cases/clusters", "GET", s.GetCountryCasesClusters)
-	s.RegisterPath("/country/cases/age", "GET", s.GetCountryCasesAgeCategory)
-	s.RegisterPath("/state/cases", "GET", s.GetStateCases)
-	s.RegisterPath("/state/cases/age", "GET", s.GetStateCasesAgeCategory)
+	s.RegisterPath("/country/cases", s.GetCountryCases)
+	s.RegisterPath("/country/cases/clusters", s.GetCountryCasesClusters)
+	s.RegisterPath("/country/cases/age", s.GetCountryCasesAgeCategory)
+	s.RegisterPath("/state/cases", s.GetStateCases)
+	s.RegisterPath("/state/cases/age", s.GetStateCasesAgeCategory)
 
-	s.RegisterPath("/country/deaths", "GET", s.GetCountryDeaths)
-	s.RegisterPath("/state/deaths", "GET", s.GetStateDeaths)
+	s.RegisterPath("/country/deaths", s.GetCountryDeaths)
+	s.RegisterPath("/state/deaths", s.GetStateDeaths)
 
-	s.RegisterPath("/state/icu", "GET", s.GetStateICU)
-	s.RegisterPath("/state/hospital", "GET", s.GetStateHospital)
-	s.RegisterPath("/state/pkrc", "GET", s.GetStateQuarantineCentre)
+	s.RegisterPath("/state/icu", s.GetStateICU)
+	s.RegisterPath("/state/hospital", s.GetStateHospital)
+	s.RegisterPath("/state/pkrc", s.GetStateQuarantineCentre)
 
 	// TODO: Need to add these in
-	s.RegisterPath("/clusters/info", "GET", s.GetClusters)
-	s.RegisterPath("/clusters/category", "GET", s.GetClusters)
-	s.RegisterPath("/clusters/name", "GET", s.GetClusters)
+	s.RegisterPath("/clusters/info", s.GetClusters)
+	s.RegisterPath("/clusters/category", s.GetClusters)
+	s.RegisterPath("/clusters/name", s.GetClusters)
 
-	s.RegisterPath("/", "GET", HomeHandler, "")
+	s.Router.StaticFile("/", "./public/index.html")
 }
 
-func (s *Server) RegisterPath(path string, method string, f func(w http.ResponseWriter, r *http.Request), basePath ...string) {
+func (s *Server) RegisterPath(path string, f func(c *gin.Context), basePath ...string) {
 	base := "/api/v1"
 	if len(basePath) > 0 {
 		base = basePath[0]
 	}
-	s.Router.HandleFunc(base + path, f).Methods(method)
+	s.Router.GET(base + path, f)
 }
 
 func (s *Server) Run() {
@@ -71,64 +71,58 @@ func (s *Server) Run() {
 	log.Fatal(http.ListenAndServe(":8000", s.Router)) //TODO: Change port to SERVER_PORT
 }
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	p := path.Dir("./public/index.html")
-	w.Header().Set("Content-type", "text/html")
-	http.ServeFile(w, r, p)
+func (s *Server) GetCountryCases(c *gin.Context) {
+	respModel := []*models.Cases{}
+	s.getCountry(c, respModel)
 }
 
-func (s *Server) GetCountryCases(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.Cases{}
-	s.getCountry(w, r, cases)
+func (s *Server) GetStateCases(c *gin.Context) {
+	respModel := []*models.Cases{}
+	s.getState(c, respModel)
 }
 
-func (s *Server) GetStateCases(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.Cases{}
-	s.getState(w, r, cases)
+func (s *Server) GetCountryCasesClusters(c *gin.Context) {
+	respModel := []*models.CasesCluster{}
+	s.getCountry(c, respModel)
 }
 
-func (s *Server) GetCountryCasesClusters(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.CasesCluster{}
-	s.getCountry(w, r, cases)
+func (s *Server) GetCountryCasesAgeCategory(c *gin.Context) {
+	respModel := []*models.CasesAgeCategory{}
+	s.getCountry(c, respModel)
 }
 
-func (s *Server) GetCountryCasesAgeCategory(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.CasesAgeCategory{}
-	s.getCountry(w, r, cases)
+func (s *Server) GetStateCasesAgeCategory(c *gin.Context) {
+	respModel := []*models.CasesAgeCategory{}
+	s.getState(c, respModel)
 }
 
-func (s *Server) GetStateCasesAgeCategory(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.CasesAgeCategory{}
-	s.getState(w, r, cases)
+func (s *Server) GetCountryDeaths(c *gin.Context) {
+	respModel := []*models.Deaths{}
+	s.getCountry(c, respModel)
 }
 
-func (s *Server) GetCountryDeaths(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.Deaths{}
-	s.getCountry(w, r, cases)
+func (s *Server) GetStateDeaths(c *gin.Context) {
+	respModel := []*models.Deaths{}
+	s.getState(c, respModel)
 }
 
-func (s *Server) GetStateDeaths(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.Deaths{}
-	s.getState(w, r, cases)
+func (s *Server) GetStateICU(c *gin.Context) {
+	respModel := []*models.ICU{}
+	s.getState(c, respModel)
 }
 
-func (s *Server) GetStateICU(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.ICU{}
-	s.getState(w, r, cases)
+func (s *Server) GetStateHospital(c *gin.Context) {
+	respModel := []*models.Hospital{}
+	s.getState(c, respModel)
 }
 
-func (s *Server) GetStateHospital(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.Hospital{}
-	s.getState(w, r, cases)
-}
-
-func (s *Server) GetStateQuarantineCentre(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.QuarantineCentre{}
-	s.getState(w, r, cases)
+func (s *Server) GetStateQuarantineCentre(c *gin.Context) {
+	respModel := []*models.QuarantineCentre{}
+	s.getState(c, respModel)
 }
 
 //TODO: this prolly has special handling
-func (s *Server) GetClusters(w http.ResponseWriter, r *http.Request) {
-	cases := []*models.Clusters{}
-	s.getCountry(w, r, cases)
+func (s *Server) GetClusters(c *gin.Context) {
+	respModel := []*models.Clusters{}
+	s.getCountry(c, respModel)
 }
