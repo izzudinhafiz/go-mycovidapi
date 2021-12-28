@@ -272,6 +272,9 @@ func writeHealthcares(db * gorm.DB) {
 	for _, row := range pkrc {
 		state_abrv, exists := statesMap[row.State]
 		if exists {
+			row.AdmitNegative = row.AdmitTotal - row.AdmitPositive - row.AdmitSuspected
+			row.DischargeNegative = row.DischargeTotal - row.DischargePositive - row.DischargeSuspected
+			row.Total = row.Suspected + row.Positive + row.Negative
 			row.State = state_abrv
 		} else {
 			row.State = ""
@@ -294,6 +297,9 @@ func writeHealthcares(db * gorm.DB) {
 	hospital_f.Close()
 
 	for _, row := range hospital {
+		row.AdmitNegative = row.AdmitTotal - row.AdmitPositive - row.AdmitSuspected
+		row.DischargeNegative = row.DischargeTotal - row.DischargePositive - row.DischargeSuspected
+		row.Total = row.Suspected + row.Positive + row.Negative
 		state_abrv, exists := statesMap[row.State]
 		if exists {
 			row.State = state_abrv
