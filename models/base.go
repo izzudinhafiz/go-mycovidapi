@@ -46,8 +46,3 @@ func (date *Date) UnmarshalCSV(csv string) error {
 	*date = Date(x)
 	return err
 }
-
-// func (datetime *DateTime) UnmarshalCSV(csv string) (err error) {
-// 	datetime.Time, err = time.Parse("2006-01-02", csv)
-// 	return err
-// }
