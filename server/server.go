@@ -6,13 +6,22 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
 	"github.com/gin-gonic/gin"
-	"github.com/izzudinhafiz/go-mycovidapi/models"
+	docs "github.com/izzudinhafiz/go-mycovidapi/docs"
 )
+
+// @title MYCovidAPI
+// @version 	1.0
+// @description RESTful API for Covid dataset provided by Ministry of Health Malaysia
+
+// @host		mycovidapi.izzudinhafiz.com
+
 
 type Server struct {
 	Router *gin.Engine
@@ -26,7 +35,6 @@ func New() *Server {
 }
 
 func (s *Server) Initialize() {
-	//TODO: DSN should come from ENV
 	var dsn = fmt.Sprintf(
 		"host=%v user=%v password=%v port=%v database=%v sslmode=disable",
 		os.Getenv("postgres_host"),
@@ -45,6 +53,7 @@ func (s *Server) Initialize() {
 
 	s.Router = gin.Default()
 	s.DB = db
+
 
 	s.RegisterPath("/country/cases", s.GetCountryCases)
 	s.RegisterPath("/country/cases/clusters", s.GetCountryCasesClusters)
@@ -65,10 +74,12 @@ func (s *Server) Initialize() {
 	s.RegisterPath("/clusters/name", s.GetClusters)
 
 	s.Router.StaticFile("/", "./public/index.html")
+	s.Router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func (s *Server) RegisterPath(path string, f func(c *gin.Context), basePath ...string) {
 	base := "/api/v1"
+	docs.SwaggerInfo.BasePath = base
 	if len(basePath) > 0 {
 		base = basePath[0]
 	}
@@ -77,62 +88,11 @@ func (s *Server) RegisterPath(path string, f func(c *gin.Context), basePath ...s
 
 func (s *Server) Run() {
 	s.Initialize()
-	port := ":" + os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe(port, s.Router)) //TODO: Change port to SERVER_PORT
+	envPort, isSet := os.LookupEnv("SERVER_PORT")
+	if !isSet {
+		envPort = "8000"
+	}
+	port := ":" + envPort
+	log.Fatal(http.ListenAndServe(port, s.Router))
 }
 
-func (s *Server) GetCountryCases(c *gin.Context) {
-	respModel := []*models.Cases{}
-	s.getCountry(c, respModel)
-}
-
-func (s *Server) GetStateCases(c *gin.Context) {
-	respModel := []*models.Cases{}
-	s.getState(c, respModel)
-}
-
-func (s *Server) GetCountryCasesClusters(c *gin.Context) {
-	respModel := []*models.CasesCluster{}
-	s.getCountry(c, respModel)
-}
-
-func (s *Server) GetCountryCasesAgeCategory(c *gin.Context) {
-	respModel := []*models.CasesAgeCategory{}
-	s.getCountry(c, respModel)
-}
-
-func (s *Server) GetStateCasesAgeCategory(c *gin.Context) {
-	respModel := []*models.CasesAgeCategory{}
-	s.getState(c, respModel)
-}
-
-func (s *Server) GetCountryDeaths(c *gin.Context) {
-	respModel := []*models.Deaths{}
-	s.getCountry(c, respModel)
-}
-
-func (s *Server) GetStateDeaths(c *gin.Context) {
-	respModel := []*models.Deaths{}
-	s.getState(c, respModel)
-}
-
-func (s *Server) GetStateICU(c *gin.Context) {
-	respModel := []*models.ICU{}
-	s.getState(c, respModel)
-}
-
-func (s *Server) GetStateHospital(c *gin.Context) {
-	respModel := []*models.Hospital{}
-	s.getState(c, respModel)
-}
-
-func (s *Server) GetStateQuarantineCentre(c *gin.Context) {
-	respModel := []*models.QuarantineCentre{}
-	s.getState(c, respModel)
-}
-
-//TODO: this prolly has special handling
-func (s *Server) GetClusters(c *gin.Context) {
-	respModel := []*models.Clusters{}
-	s.getCountry(c, respModel)
-}

@@ -1,0 +1,108 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "RESTful API for Covid dataset provided by Ministry of Health Malaysia",
+        "title": "MYCovidAPI",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/country/cases": {
+            "get": {
+                "description": "Gets a list of Cases for Malaysia",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cases"
+                ],
+                "summary": "List Cases for Country",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Cases"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Cases": {
+            "type": "object",
+            "properties": {
+                "activeCases": {
+                    "type": "integer"
+                },
+                "clusterCases": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "fullyVaxCases": {
+                    "type": "integer"
+                },
+                "importCases": {
+                    "type": "integer"
+                },
+                "newCases": {
+                    "type": "integer"
+                },
+                "nonVaxCases": {
+                    "type": "integer"
+                },
+                "partialVaxCases": {
+                    "type": "integer"
+                },
+                "recovered": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.ValidationError": {
+            "type": "object",
+            "properties": {
+                "loc": {
+                    "type": "string"
+                },
+                "msg": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

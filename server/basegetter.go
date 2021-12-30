@@ -70,7 +70,16 @@ type ValidationError struct {
 
 func (s *Server) getCountry(c *gin.Context, out interface{}) error {
 	var query CountryRequests
-	c.BindQuery(&query)
+	err := c.ShouldBindQuery(&query)
+	if err != nil {
+		c.AbortWithStatusJSON(422, ValidationError{
+			err.Error(),
+			"start_date | end_date",
+			"string",
+		})
+		log.Errorf("%v?%v: %v",c.Request.URL.Path, c.Request.URL.Query(), err)
+		return err
+	}
 
 	val := reflect.ValueOf(out).Interface()
 	tx := s.DB
@@ -114,7 +123,7 @@ func (s *Server) getState(c *gin.Context, out interface{}) error {
 				Type: "string (comma separated)",
 			}
 		}
-		c.AbortWithStatusJSON(http.StatusBadRequest, errorMsg)
+		c.AbortWithStatusJSON(422, errorMsg)
 		return err
 	}
 
