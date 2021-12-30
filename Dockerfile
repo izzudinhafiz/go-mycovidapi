@@ -16,7 +16,8 @@ ENV TZ Asia/Kuala_Lumpur
 
 # Copy necessary files for execution
 COPY --from=builder /serverapi /serverapi
-COPY /setup.sh /startup.sh
+COPY ./public /public
+COPY ./startup.sh /startup.sh
 RUN chmod +x /startup.sh
 
 # Sets up a cronjob to run every 6 hours to ingest data
