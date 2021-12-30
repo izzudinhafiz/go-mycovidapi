@@ -37,11 +37,11 @@ func New() *Server {
 func (s *Server) Initialize() {
 	var dsn = fmt.Sprintf(
 		"host=%v user=%v password=%v port=%v database=%v sslmode=disable",
-		os.Getenv("postgres_host"),
-		os.Getenv("postgres_user"),
-		os.Getenv("postgres_pass"),
-		os.Getenv("postgres_port"),
-		os.Getenv("postgres_database"),
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_PORT"),
+		os.Getenv("POSTGRES_DB"),
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
