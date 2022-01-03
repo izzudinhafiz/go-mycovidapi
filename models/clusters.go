@@ -22,3 +22,15 @@ type Clusters struct {
 	Recovered int			`csv:"recovered" json:"recovered"`
 	Description string 		`csv:"summary_en" json:"description"`
 }
+
+type ClustersList struct {
+	UpdatedAt time.Time		`json:"updatedAt"`
+	State 	string			`json:"state"`
+	Cluster string			`json:"clusterName"`
+	District string			`json:"district"`
+	DateAnnounced Date		`json:"dateAnnounced"`
+	DateLastOnset Date		`json:"dateLastOnset"`
+	Category string			`json:"category"`
+	Status string			`json:"status"`
+	Description string 		`json:"description"`
+}

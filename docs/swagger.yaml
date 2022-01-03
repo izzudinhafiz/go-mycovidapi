@@ -24,6 +24,240 @@ definitions:
       updatedAt:
         type: string
     type: object
+  models.CasesAgeCategory:
+    properties:
+      adolescent:
+        type: integer
+      adult:
+        type: integer
+      children:
+        type: integer
+      date:
+        type: string
+      elderly:
+        type: integer
+      state:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.CasesCluster:
+    properties:
+      community:
+        type: integer
+      date:
+        type: string
+      detention:
+        type: integer
+      education:
+        type: integer
+      highRisk:
+        type: integer
+      import:
+        type: integer
+      religious:
+        type: integer
+      state:
+        type: string
+      updatedAt:
+        type: string
+      workplace:
+        type: integer
+    type: object
+  models.Clusters:
+    properties:
+      ICU:
+        type: integer
+      activeCases:
+        type: integer
+      category:
+        type: string
+      clusterName:
+        type: string
+      dateAnnounced:
+        type: string
+      dateLastOnset:
+        type: string
+      deaths:
+        type: integer
+      description:
+        type: string
+      district:
+        type: string
+      newCases:
+        type: integer
+      recovered:
+        type: integer
+      state:
+        type: string
+      status:
+        type: string
+      testsConducted:
+        type: integer
+      totalCases:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.ClustersList:
+    properties:
+      category:
+        type: string
+      clusterName:
+        type: string
+      dateAnnounced:
+        type: string
+      dateLastOnset:
+        type: string
+      description:
+        type: string
+      district:
+        type: string
+      state:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Deaths:
+    properties:
+      bid:
+        type: integer
+      bidDoD:
+        description: Brought In Dead on date of death
+        type: integer
+      date:
+        type: string
+      dayGap:
+        description: Median days between date of death and date of report for all
+          deaths reported on the day
+        type: integer
+      fullyVax:
+        type: integer
+      new:
+        type: integer
+      newDoD:
+        description: Deaths based on date of death
+        type: integer
+      partialVax:
+        type: integer
+      state:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Hospital:
+    properties:
+      admittedNegative:
+        type: integer
+      admittedPositive:
+        type: integer
+      admittedSuspected:
+        type: integer
+      admittedTotal:
+        type: integer
+      beds:
+        type: integer
+      bedsCovid:
+        type: integer
+      bedsNonCrit:
+        type: integer
+      date:
+        type: string
+      dischargedNegative:
+        type: integer
+      dischargedPositive:
+        type: integer
+      dischargedSuspected:
+        type: integer
+      dischargedTotal:
+        type: integer
+      state:
+        type: string
+      stockNegative:
+        type: integer
+      stockPUI:
+        type: integer
+      stockPositive:
+        type: integer
+      stockTotal:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.ICU:
+    properties:
+      beds:
+        type: integer
+      bedsCapacityTotal:
+        type: integer
+      bedsForCovid:
+        type: integer
+      bedsReserved:
+        type: integer
+      date:
+        type: string
+      state:
+        type: string
+      stockNegative:
+        type: integer
+      stockPUI:
+        type: integer
+      stockPositive:
+        type: integer
+      updatedAt:
+        type: string
+      ventilators:
+        type: integer
+      ventilatorsNegative:
+        type: integer
+      ventilatorsPUI:
+        type: integer
+      ventilatorsPortable:
+        type: integer
+      ventilatorsPortableUsed:
+        type: integer
+      ventilatorsPositive:
+        type: integer
+      ventilatorsUsed:
+        type: integer
+    type: object
+  models.QuarantineCentre:
+    properties:
+      admittedNegative:
+        type: integer
+      admittedPUI:
+        type: integer
+      admittedPositive:
+        type: integer
+      admittedTotal:
+        type: integer
+      beds:
+        type: integer
+      date:
+        type: string
+      dischargedNegative:
+        type: integer
+      dischargedPUI:
+        type: integer
+      dischargedPositive:
+        type: integer
+      dischargedTotal:
+        type: integer
+      state:
+        type: string
+      stockNegative:
+        type: integer
+      stockPUI:
+        type: integer
+      stockPositive:
+        type: integer
+      stockTotal:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
   server.ValidationError:
     properties:
       loc:
@@ -39,9 +273,40 @@ info:
   title: MYCovidAPI
   version: "1.0"
 paths:
+  /clusters/active:
+    get:
+      description: Gets a list of active cluster.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ClustersList'
+            type: array
+      summary: List all active cluster
+      tags:
+      - clusters
+  /clusters/info:
+    get:
+      description: Gets a list of cluster.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ClustersList'
+            type: array
+      summary: List all cluster
+      tags:
+      - clusters
   /country/cases:
     get:
-      description: Gets a list of Cases for Malaysia
+      description: Gets a list of Cases for Malaysia. If no parameters are passed,
+        will return all available data
       parameters:
       - description: YYYY-MM-DD. If omitted, will return data from start of records
         in: query
@@ -67,4 +332,295 @@ paths:
       summary: List Cases for Country
       tags:
       - cases
+  /country/cases/age:
+    get:
+      description: Gets a list of Cases based on age category for Malaysia. If no
+        parameters are passed, will return all available data
+      parameters:
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CasesAgeCategory'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List Cases based on Age category for Country
+      tags:
+      - cases
+  /country/cases/clusters:
+    get:
+      description: Gets a list of Cases based on cluster category for Malaysia. If
+        no parameters are passed, will return all available data
+      parameters:
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CasesCluster'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List Cases based on Cluster category for Country
+      tags:
+      - cases
+  /country/deaths:
+    get:
+      description: Gets a list of Deaths for Malaysia. If no parameters are passed,
+        will return all available data
+      parameters:
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Deaths'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List Deaths for Country
+      tags:
+      - deaths
+  /state/cases:
+    get:
+      description: Gets a list of Cases for states in Malaysia. If no date parameters
+        are passed, will return all available data
+      parameters:
+      - description: State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG
+        in: query
+        name: state_id
+        required: true
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Cases'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List Cases for State
+      tags:
+      - cases
+  /state/cases/age:
+    get:
+      description: Gets a list of Cases based on age category for states in Malaysia.
+        If no date parameters are passed, will return all available data
+      parameters:
+      - description: State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG
+        in: query
+        name: state_id
+        required: true
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CasesAgeCategory'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List Cases based on Age category for State
+      tags:
+      - cases
+  /state/deaths:
+    get:
+      description: Gets a list of Deaths for states in Malaysia. If no date parameters
+        are passed, will return all available data
+      parameters:
+      - description: State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG
+        in: query
+        name: state_id
+        required: true
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Deaths'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List Deaths for State
+      tags:
+      - deaths
+  /state/hospital:
+    get:
+      description: Gets a list of Hospital utilization for states in Malaysia. If
+        no date parameters are passed, will return all available data
+      parameters:
+      - description: State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG
+        in: query
+        name: state_id
+        required: true
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Hospital'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List Hospital utilization for State
+      tags:
+      - healthcare
+  /state/icu:
+    get:
+      description: Gets a list of ICU utilization for states in Malaysia. If no date
+        parameters are passed, will return all available data
+      parameters:
+      - description: State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG
+        in: query
+        name: state_id
+        required: true
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ICU'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List ICU utilization for State
+      tags:
+      - healthcare
+  /state/pkrc:
+    get:
+      description: Gets a list of Quarantine Centre (PKRC) utilization for states
+        in Malaysia. If no date parameters are passed, will return all available data
+      parameters:
+      - description: State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG
+        in: query
+        name: state_id
+        required: true
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data from start of records
+        in: query
+        name: start_date
+        type: string
+      - description: YYYY-MM-DD. If omitted, will return data to end of records
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.QuarantineCentre'
+            type: array
+        "422":
+          description: Invalid parameters passed
+          schema:
+            $ref: '#/definitions/server.ValidationError'
+      summary: List Quarantine Centre utilization for State
+      tags:
+      - healthcare
 swagger: "2.0"

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/izzudinhafiz/go-mycovidapi/models"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -41,11 +42,12 @@ func parseStates(states_str string) ([]string, error) {
 	}
 
 	states_raw := strings.Split(states_str, ",")
-	for _, state_raw := range states_raw {
+	for i, state_raw := range states_raw {
 		_, key_exists := statesAbrvMap[strings.ToUpper(state_raw)]
 		if !key_exists {
 			return []string{}, ErrorUnknownState
 		}
+		states_raw[i] = strings.ToUpper(state_raw)
 	}
 
 	return states_raw, nil
@@ -139,6 +141,30 @@ func (s *Server) getState(c *gin.Context, out interface{}) error {
 	}
 
 	tx = tx.Where("state IN ?", states).Order("date, state").Find(&val)
+	if tx.Error != nil {
+		log.Errorf("%v?%v: %v",c.Request.URL.Path, c.Request.URL.Query(), tx.Error)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return tx.Error
+	}
+	c.JSON(http.StatusOK, val)
+	return nil
+}
+
+func (s *Server) getClusterList(c *gin.Context, out interface{}) error {
+	val := reflect.ValueOf(out).Interface()
+	tx := s.DB.Model(models.Clusters{}).Find(&val)
+	if tx.Error != nil {
+		log.Errorf("%v?%v: %v",c.Request.URL.Path, c.Request.URL.Query(), tx.Error)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return tx.Error
+	}
+	c.JSON(http.StatusOK, val)
+	return nil
+}
+
+func (s *Server) getActiveClusters(c *gin.Context, out interface{}) error {
+	val := reflect.ValueOf(out).Interface()
+	tx := s.DB.Model(models.Clusters{}).Where("status = ?", "active").Find(&val)
 	if tx.Error != nil {
 		log.Errorf("%v?%v: %v",c.Request.URL.Path, c.Request.URL.Query(), tx.Error)
 		c.AbortWithStatus(http.StatusInternalServerError)

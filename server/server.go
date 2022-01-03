@@ -69,9 +69,10 @@ func (s *Server) Initialize() {
 	s.RegisterPath("/state/pkrc", s.GetStateQuarantineCentre)
 
 	// TODO: Need to add these in
-	s.RegisterPath("/clusters/info", s.GetClusters)
-	s.RegisterPath("/clusters/category", s.GetClusters)
-	s.RegisterPath("/clusters/name", s.GetClusters)
+	s.RegisterPath("/clusters/info", s.GetClustersInfo)
+	s.RegisterPath("/clusters/category", s.GetClustersInfo)
+	s.RegisterPath("/clusters/", s.GetClusterList)
+	s.RegisterPath("/clusters/active", s.GetActiveClusters)
 
 	s.Router.StaticFile("/", "./public/index.html")
 	s.Router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

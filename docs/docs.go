@@ -23,9 +23,55 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/clusters/active": {
+            "get": {
+                "description": "Gets a list of active cluster.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clusters"
+                ],
+                "summary": "List all active cluster",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ClustersList"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/clusters/info": {
+            "get": {
+                "description": "Gets a list of cluster.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clusters"
+                ],
+                "summary": "List all cluster",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ClustersList"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/country/cases": {
             "get": {
-                "description": "Gets a list of Cases for Malaysia",
+                "description": "Gets a list of Cases for Malaysia. If no parameters are passed, will return all available data",
                 "produces": [
                     "application/json"
                 ],
@@ -54,6 +100,435 @@ var doc = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/models.Cases"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/country/cases/age": {
+            "get": {
+                "description": "Gets a list of Cases based on age category for Malaysia. If no parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cases"
+                ],
+                "summary": "List Cases based on Age category for Country",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CasesAgeCategory"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/country/cases/clusters": {
+            "get": {
+                "description": "Gets a list of Cases based on cluster category for Malaysia. If no parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cases"
+                ],
+                "summary": "List Cases based on Cluster category for Country",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CasesCluster"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/country/deaths": {
+            "get": {
+                "description": "Gets a list of Deaths for Malaysia. If no parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "deaths"
+                ],
+                "summary": "List Deaths for Country",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Deaths"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/state/cases": {
+            "get": {
+                "description": "Gets a list of Cases for states in Malaysia. If no date parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cases"
+                ],
+                "summary": "List Cases for State",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG",
+                        "name": "state_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Cases"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/state/cases/age": {
+            "get": {
+                "description": "Gets a list of Cases based on age category for states in Malaysia. If no date parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cases"
+                ],
+                "summary": "List Cases based on Age category for State",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG",
+                        "name": "state_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CasesAgeCategory"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/state/deaths": {
+            "get": {
+                "description": "Gets a list of Deaths for states in Malaysia. If no date parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "deaths"
+                ],
+                "summary": "List Deaths for State",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG",
+                        "name": "state_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Deaths"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/state/hospital": {
+            "get": {
+                "description": "Gets a list of Hospital utilization for states in Malaysia. If no date parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "healthcare"
+                ],
+                "summary": "List Hospital utilization for State",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG",
+                        "name": "state_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Hospital"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/state/icu": {
+            "get": {
+                "description": "Gets a list of ICU utilization for states in Malaysia. If no date parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "healthcare"
+                ],
+                "summary": "List ICU utilization for State",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG",
+                        "name": "state_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ICU"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid parameters passed",
+                        "schema": {
+                            "$ref": "#/definitions/server.ValidationError"
+                        }
+                    }
+                }
+            }
+        },
+        "/state/pkrc": {
+            "get": {
+                "description": "Gets a list of Quarantine Centre (PKRC) utilization for states in Malaysia. If no date parameters are passed, will return all available data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "healthcare"
+                ],
+                "summary": "List Quarantine Centre utilization for State",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "State abbreviation. e.g. Pahang=PHG. Can be chained, e.g. state_id=PHG,KUL,PNG",
+                        "name": "state_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data from start of records",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD. If omitted, will return data to end of records",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.QuarantineCentre"
                             }
                         }
                     },
@@ -100,6 +575,358 @@ var doc = `{
                 },
                 "state": {
                     "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CasesAgeCategory": {
+            "type": "object",
+            "properties": {
+                "adolescent": {
+                    "type": "integer"
+                },
+                "adult": {
+                    "type": "integer"
+                },
+                "children": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "elderly": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CasesCluster": {
+            "type": "object",
+            "properties": {
+                "community": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "detention": {
+                    "type": "integer"
+                },
+                "education": {
+                    "type": "integer"
+                },
+                "highRisk": {
+                    "type": "integer"
+                },
+                "import": {
+                    "type": "integer"
+                },
+                "religious": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "workplace": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Clusters": {
+            "type": "object",
+            "properties": {
+                "ICU": {
+                    "type": "integer"
+                },
+                "activeCases": {
+                    "type": "integer"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "clusterName": {
+                    "type": "string"
+                },
+                "dateAnnounced": {
+                    "type": "string"
+                },
+                "dateLastOnset": {
+                    "type": "string"
+                },
+                "deaths": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "district": {
+                    "type": "string"
+                },
+                "newCases": {
+                    "type": "integer"
+                },
+                "recovered": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "testsConducted": {
+                    "type": "integer"
+                },
+                "totalCases": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ClustersList": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "clusterName": {
+                    "type": "string"
+                },
+                "dateAnnounced": {
+                    "type": "string"
+                },
+                "dateLastOnset": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "district": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Deaths": {
+            "type": "object",
+            "properties": {
+                "bid": {
+                    "type": "integer"
+                },
+                "bidDoD": {
+                    "description": "Brought In Dead on date of death",
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "dayGap": {
+                    "description": "Median days between date of death and date of report for all deaths reported on the day",
+                    "type": "integer"
+                },
+                "fullyVax": {
+                    "type": "integer"
+                },
+                "new": {
+                    "type": "integer"
+                },
+                "newDoD": {
+                    "description": "Deaths based on date of death",
+                    "type": "integer"
+                },
+                "partialVax": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Hospital": {
+            "type": "object",
+            "properties": {
+                "admittedNegative": {
+                    "type": "integer"
+                },
+                "admittedPositive": {
+                    "type": "integer"
+                },
+                "admittedSuspected": {
+                    "type": "integer"
+                },
+                "admittedTotal": {
+                    "type": "integer"
+                },
+                "beds": {
+                    "type": "integer"
+                },
+                "bedsCovid": {
+                    "type": "integer"
+                },
+                "bedsNonCrit": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "dischargedNegative": {
+                    "type": "integer"
+                },
+                "dischargedPositive": {
+                    "type": "integer"
+                },
+                "dischargedSuspected": {
+                    "type": "integer"
+                },
+                "dischargedTotal": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "stockNegative": {
+                    "type": "integer"
+                },
+                "stockPUI": {
+                    "type": "integer"
+                },
+                "stockPositive": {
+                    "type": "integer"
+                },
+                "stockTotal": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ICU": {
+            "type": "object",
+            "properties": {
+                "beds": {
+                    "type": "integer"
+                },
+                "bedsCapacityTotal": {
+                    "type": "integer"
+                },
+                "bedsForCovid": {
+                    "type": "integer"
+                },
+                "bedsReserved": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "stockNegative": {
+                    "type": "integer"
+                },
+                "stockPUI": {
+                    "type": "integer"
+                },
+                "stockPositive": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "ventilators": {
+                    "type": "integer"
+                },
+                "ventilatorsNegative": {
+                    "type": "integer"
+                },
+                "ventilatorsPUI": {
+                    "type": "integer"
+                },
+                "ventilatorsPortable": {
+                    "type": "integer"
+                },
+                "ventilatorsPortableUsed": {
+                    "type": "integer"
+                },
+                "ventilatorsPositive": {
+                    "type": "integer"
+                },
+                "ventilatorsUsed": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.QuarantineCentre": {
+            "type": "object",
+            "properties": {
+                "admittedNegative": {
+                    "type": "integer"
+                },
+                "admittedPUI": {
+                    "type": "integer"
+                },
+                "admittedPositive": {
+                    "type": "integer"
+                },
+                "admittedTotal": {
+                    "type": "integer"
+                },
+                "beds": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "dischargedNegative": {
+                    "type": "integer"
+                },
+                "dischargedPUI": {
+                    "type": "integer"
+                },
+                "dischargedPositive": {
+                    "type": "integer"
+                },
+                "dischargedTotal": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "stockNegative": {
+                    "type": "integer"
+                },
+                "stockPUI": {
+                    "type": "integer"
+                },
+                "stockPositive": {
+                    "type": "integer"
+                },
+                "stockTotal": {
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"
